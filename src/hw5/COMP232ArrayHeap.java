@@ -58,7 +58,7 @@ public class COMP232ArrayHeap<K extends Comparable<K>, V> implements COMP232Prio
     }
 
     /**
-     * Get the index where the parent of the node at index i is stored
+     * Get the index where the parent of the no de at index i is stored
      * @param i the target index
      * @return the index of the current parent
      */
@@ -80,6 +80,8 @@ public class COMP232ArrayHeap<K extends Comparable<K>, V> implements COMP232Prio
     }
 
     public void add(K key, V value) {
+        tree.add(new HeapNode<>(key, value));
+        perculateUp(tree.size() - 1);
         /*
          * Place the node at the end of the heap, i.e. the first empty spot in 
          * level order. Since the heap is always a complete tree, and we are 
@@ -91,7 +93,17 @@ public class COMP232ArrayHeap<K extends Comparable<K>, V> implements COMP232Prio
          * node up the tree.
 	 * I recommend creating a helper function to assist with the percolation.
          */
-        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    private void perculateUp(int index) {
+        int parentIndex = getParentIndex(index);
+         
+        while (index > 0 && tree.get(index).key.compareTo(tree.get(parentIndex).key) < 0) {
+            swap(index, parentIndex);
+
+            index = parentIndex;
+            parentIndex = getParentIndex(index);
+        }
     }
 
     /**
@@ -206,7 +218,26 @@ public class COMP232ArrayHeap<K extends Comparable<K>, V> implements COMP232Prio
      */
     public void adjustPriority(V value, K newKey) {
         // Intentionally not implemented -- see homework assignment
-        throw new UnsupportedOperationException("Not yet implemented.");
+       int index = -1;
+       for(int i =0; i < tree.size(); i++) {
+        if (tree.get(i).value.equals(value)) {
+            index = i;
+        }
+       }
+       if (index == -1) {
+        throw new IllegalStateException();
+       }
+
+       K oldKey = tree.get(index).key;
+       tree.get(index).key = newKey;
+
+       if (newKey.compareTo(oldKey) < 0) {
+        perculateUp(index);
+       } 
+       else {
+        trickleDown(index);
+       }
+        
 
         /*
          * Find the node with the value -- Hint: Just search through the array!
