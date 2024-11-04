@@ -209,49 +209,72 @@ public class COMP232LinkedBinarySearchTree<K extends Comparable<K>, V> extends C
 	 */
 	public V remove(K key) {
 		// Intentionally not implemented - see homework assignment.
-		V[] removedValue = (V[]) new Object[1];
-		root = removeHelper(root, key, removedValue);
-		if (removedValue[0] != null) {
-			size --;
-		}
-		return removedValue[0];
+		return removeHelper(root, key);
 	}
 
-	private BTNode<K,V> removeHelper(BTNode<K,V> subTreeRoot, K key, V[] removedValue) {
+	private V removeHelper(BTNode<K,V> subTreeRoot, K key) {
 		if (subTreeRoot == null) {
 			return null;
 		}
 
 		int cmp = key.compareTo(subTreeRoot.key);
 		if (cmp < 0) {
-			 subTreeRoot.left = removeHelper(subTreeRoot.right, key, removedValue);
+			return removeHelper(subTreeRoot.left, key);
 		}
 	    else if (cmp > 0) {
-			subTreeRoot.right = removeHelper(subTreeRoot.left, key, removedValue);
-			 }
-		 else {
-			removedValue[0] = subTreeRoot.value;
+			return removeHelper(subTreeRoot.right, key);
+			}
+		else {
+			BTNode<K,V> removed = subTreeRoot;
+			V removedVal = removed.value;
+			int tempSize = size - 1;
+			size--;
 			// Node has no children
 			if (subTreeRoot.left == null && subTreeRoot.right == null) {
-				return null;
+				if (subTreeRoot == root){
+					root = null;
+				} else if (subTreeRoot.parent.left == subTreeRoot){
+					subTreeRoot.parent.left = null;
+				} else {
+					subTreeRoot.parent.right = null;
+				}
 			}
 			// Node has one child
-			if (subTreeRoot.left == null) {
-				return subTreeRoot.right;
+			else if (subTreeRoot.left == null) {
+				if (subTreeRoot == root){
+					root = subTreeRoot.right;
+				} else if (subTreeRoot.parent.left == subTreeRoot){
+					subTreeRoot.parent.left = subTreeRoot.right;
+					subTreeRoot.right.parent = subTreeRoot.parent;
+				} else {
+					subTreeRoot.parent.right = subTreeRoot.right;
+					subTreeRoot.right.parent = subTreeRoot.parent;
+				}
 			} else if (subTreeRoot.right == null) {
-				return subTreeRoot.left;
+				if (subTreeRoot == root){
+					root = subTreeRoot.left;
+				} else if (subTreeRoot.parent.left == subTreeRoot){
+					subTreeRoot.parent.left = subTreeRoot.left;
+					subTreeRoot.left.parent = subTreeRoot.parent;
+				} else {
+					subTreeRoot.parent.right = subTreeRoot.left;
+					subTreeRoot.left.parent = subTreeRoot.parent;
+				}
+			} else {
+				// Node has two children
+				BTNode<K,V> successor = findMin(subTreeRoot.right);
+				subTreeRoot.key = successor.key;
+				subTreeRoot.value = successor.value;
+				// successor.parent.right = null;
+				// successor.parent.left = subTreeRoot.left;
+				removeHelper(subTreeRoot.right, successor.key);
 			}
-			// Node has two children
-			BTNode<K,V> successor = findMin(subTreeRoot.right);
-			subTreeRoot.key = successor.key;
-			subTreeRoot.value = successor.value;
-			subTreeRoot.right = removeHelper(subTreeRoot.right, successor.key, removedValue);
-
-
+			size = tempSize;
+			return removedVal;
 		}
-		return subTreeRoot;
 	}
 
+	
 	private BTNode<K, V> findMin(BTNode<K, V> node) {
 		while (node.left != null) {
 			node = node.left;
