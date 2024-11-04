@@ -1,5 +1,7 @@
 package hw5;
 
+import java.util.NoSuchElementException;
+
 /**
  * Linked implementation of a binary search tree. The binary search tree
  * inherits the methods from the binary tree. The add and remove methods must
@@ -101,7 +103,23 @@ public class COMP232LinkedBinarySearchTree<K extends Comparable<K>, V> extends C
 	 */
 	public V get(K key) {
 		// Intentionally not implemented - see homework assignment.
-		throw new UnsupportedOperationException("Not yet implemented");
+		return getHelper(root, key);
+		
+	}
+
+	private V getHelper(BTNode<K, V> subTreeRoot, K key) {
+		if (subTreeRoot == null) {
+			return null;
+		}
+		else if (subTreeRoot.key.equals(key)) {
+			return subTreeRoot.value;
+		}
+		else if (key.compareTo(subTreeRoot.key) < 0) {
+			return getHelper(subTreeRoot.left, key);
+		}
+		else {
+			return getHelper(subTreeRoot.right, key);
+		}
 	}
 
 	/**
@@ -109,7 +127,27 @@ public class COMP232LinkedBinarySearchTree<K extends Comparable<K>, V> extends C
 	 */
 	public void set(K key, V value) {
 		// Intentionally not implemented - see homework assignment.
-		throw new UnsupportedOperationException("Not yet implemented");
+		BTNode<K,V> node = findNode(root, key);
+		if (node != null) {
+			node.value = value;
+		} else {
+			throw new NoSuchElementException();
+		}
+	}
+
+	private BTNode<K,V> findNode(BTNode<K, V> subTreeRoot, K key) {
+		if (subTreeRoot == null) {
+			return null;
+		}
+		else if (subTreeRoot.key.equals(key)) {
+			return subTreeRoot;
+		}
+		else if (key.compareTo(subTreeRoot.key) < 0) {
+			return findNode(subTreeRoot.left, key);
+		}
+		else {
+			return findNode(subTreeRoot.right, key);
+		}
 	}
 
 	/**
@@ -171,7 +209,77 @@ public class COMP232LinkedBinarySearchTree<K extends Comparable<K>, V> extends C
 	 */
 	public V remove(K key) {
 		// Intentionally not implemented - see homework assignment.
-		throw new UnsupportedOperationException("Not yet implemented");
+		return removeHelper(root, key);
+	}
+
+	private V removeHelper(BTNode<K,V> subTreeRoot, K key) {
+		if (subTreeRoot == null) {
+			return null;
+		}
+
+		int cmp = key.compareTo(subTreeRoot.key);
+		if (cmp < 0) {
+			return removeHelper(subTreeRoot.left, key);
+		}
+	    else if (cmp > 0) {
+			return removeHelper(subTreeRoot.right, key);
+			}
+		else {
+			BTNode<K,V> removed = subTreeRoot;
+			V removedVal = removed.value;
+			int tempSize = size - 1;
+			size--;
+			// Node has no children
+			if (subTreeRoot.left == null && subTreeRoot.right == null) {
+				if (subTreeRoot == root){
+					root = null;
+				} else if (subTreeRoot.parent.left == subTreeRoot){
+					subTreeRoot.parent.left = null;
+				} else {
+					subTreeRoot.parent.right = null;
+				}
+			}
+			// Node has one child
+			else if (subTreeRoot.left == null) {
+				if (subTreeRoot == root){
+					root = subTreeRoot.right;
+				} else if (subTreeRoot.parent.left == subTreeRoot){
+					subTreeRoot.parent.left = subTreeRoot.right;
+					subTreeRoot.right.parent = subTreeRoot.parent;
+				} else {
+					subTreeRoot.parent.right = subTreeRoot.right;
+					subTreeRoot.right.parent = subTreeRoot.parent;
+				}
+			} else if (subTreeRoot.right == null) {
+				if (subTreeRoot == root){
+					root = subTreeRoot.left;
+				} else if (subTreeRoot.parent.left == subTreeRoot){
+					subTreeRoot.parent.left = subTreeRoot.left;
+					subTreeRoot.left.parent = subTreeRoot.parent;
+				} else {
+					subTreeRoot.parent.right = subTreeRoot.left;
+					subTreeRoot.left.parent = subTreeRoot.parent;
+				}
+			} else {
+				// Node has two children
+				BTNode<K,V> successor = findMin(subTreeRoot.right);
+				subTreeRoot.key = successor.key;
+				subTreeRoot.value = successor.value;
+				// successor.parent.right = null;
+				// successor.parent.left = subTreeRoot.left;
+				removeHelper(subTreeRoot.right, successor.key);
+			}
+			size = tempSize;
+			return removedVal;
+		}
+	}
+
+	
+	private BTNode<K, V> findMin(BTNode<K, V> node) {
+		while (node.left != null) {
+			node = node.left;
+		}
+		return node;
 	}
 
 	/*
